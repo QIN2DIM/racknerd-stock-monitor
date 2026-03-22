@@ -12,7 +12,6 @@ from racknerd.scraper import run_snapshot
 from racknerd.storage import save_snapshot
 from settings import settings
 
-
 app = typer.Typer(help="RackNerd stock monitor CLI.", no_args_is_help=True)
 
 
@@ -61,17 +60,10 @@ async def run_snapshot_command(
         )
         for category_name, tasks in category_groups:
             category_task_ids[category_name] = progress.add_task(
-                f"{category_name} [0/{len(tasks)}]",
-                total=len(tasks),
+                f"{category_name} [0/{len(tasks)}]", total=len(tasks)
             )
 
-    def on_scrape_progress(
-        category_name: str,
-        completed: int,
-        total: int,
-        task,
-        result,
-    ) -> None:
+    def on_scrape_progress(category_name: str, completed: int, total: int, task, result) -> None:
         del task, result
         task_id = category_task_ids.get(category_name)
         if task_id is None:
@@ -86,9 +78,7 @@ async def run_snapshot_command(
 
     with progress:
         snapshot = await run_snapshot(
-            config,
-            queue_callback=on_queue_discovered,
-            progress_callback=on_scrape_progress,
+            config, queue_callback=on_queue_discovered, progress_callback=on_scrape_progress
         )
 
     saved_paths = save_snapshot(snapshot, config.output_dir)
@@ -103,14 +93,8 @@ def run_scheduler_command(
     headed: bool = False,
     headless: bool = False,
 ) -> None:
-    config = ScraperConfig(
-        headless=resolve_headless(headed, headless),
-    )
-    start_scheduler(
-        config,
-        interval_minutes=interval_minutes,
-        run_immediately=run_immediately,
-    )
+    config = ScraperConfig(headless=resolve_headless(headed, headless))
+    start_scheduler(config, interval_minutes=interval_minutes, run_immediately=run_immediately)
 
 
 @app.command("snapshot")
@@ -136,9 +120,7 @@ def snapshot_cli(
         help="Maximum number of concurrent product detail pages.",
     ),
     timezone: str = typer.Option(
-        settings.timezone,
-        "--timezone",
-        help="Timezone used for snapshot timestamps.",
+        settings.timezone, "--timezone", help="Timezone used for snapshot timestamps."
     ),
     output_dir: Path = typer.Option(
         settings.output_dir,
@@ -146,15 +128,9 @@ def snapshot_cli(
         help="Directory used for latest/history JSON snapshots.",
     ),
     headed: bool = typer.Option(
-        False,
-        "--headed",
-        help="Launch Chromium in headed mode for debugging.",
+        False, "--headed", help="Launch Chromium in headed mode for debugging."
     ),
-    headless: bool = typer.Option(
-        False,
-        "--headless",
-        help="Force Chromium headless mode.",
-    ),
+    headless: bool = typer.Option(False, "--headless", help="Force Chromium headless mode."),
 ) -> None:
     asyncio.run(
         run_snapshot_command(
@@ -183,15 +159,9 @@ def scheduler_cli(
         help="Run one snapshot immediately before entering the interval loop.",
     ),
     headed: bool = typer.Option(
-        False,
-        "--headed",
-        help="Launch Chromium in headed mode for debugging.",
+        False, "--headed", help="Launch Chromium in headed mode for debugging."
     ),
-    headless: bool = typer.Option(
-        False,
-        "--headless",
-        help="Force Chromium headless mode.",
-    ),
+    headless: bool = typer.Option(False, "--headless", help="Force Chromium headless mode."),
 ) -> None:
     run_scheduler_command(
         interval_minutes=interval_minutes,

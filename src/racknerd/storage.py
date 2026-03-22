@@ -22,4 +22,3 @@ def save_snapshot(snapshot: SnapshotFile, output_dir: Path) -> SavedPaths:
     history_path.write_text(serialized + "\n", encoding="utf-8")
 
     return SavedPaths(latest_path=latest_path, history_path=history_path)
-

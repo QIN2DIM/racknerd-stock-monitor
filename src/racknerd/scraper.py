@@ -7,11 +7,16 @@ from typing import Callable, Iterable, Sequence
 from urllib.parse import urljoin
 from zoneinfo import ZoneInfo
 
-from playwright.async_api import BrowserContext, Page, TimeoutError as PlaywrightTimeoutError, async_playwright
+from playwright.async_api import (
+    BrowserContext,
+    Page,
+    TimeoutError as PlaywrightTimeoutError,
+    async_playwright,
+)
 
 from settings import settings
 
-from racknerd.catalog import RackNerdCategory
+from catalog import RackNerdCategory
 from racknerd.models import (
     DiskInfo,
     LocationInfo,
@@ -47,6 +52,8 @@ LOCATION_SELECT_XPATH = "//label[normalize-space()='Location']/following-sibling
 PRICE_PATTERN = re.compile(r"\$(?P<amount>\d+(?:\.\d+)?)\s*USD", re.IGNORECASE)
 TEST_IP_PATTERN = re.compile(r"Test IP:\s*([0-9.]+)", re.IGNORECASE)
 SIZE_PATTERN = re.compile(r"(?P<size>\d+(?:\.\d+)?)\s*(?P<unit>GB|TB)\b", re.IGNORECASE)
+
+
 def normalize_text(value: str | None) -> str | None:
     if value is None:
         return None
@@ -141,8 +148,10 @@ def parse_server_specs(description_text: str | None) -> ServerSpecs:
         if "network port" in lower and public_network_port is None:
             public_network_port = line
             continue
-        if monthly_transfer is None and "monthly" in lower and (
-            "bandwidth" in lower or "transfer" in lower
+        if (
+            monthly_transfer is None
+            and "monthly" in lower
+            and ("bandwidth" in lower or "transfer" in lower)
         ):
             monthly_transfer = line
             continue
@@ -190,9 +199,7 @@ async def _extract_select_option_texts(select_locator) -> list[str]:
 
 
 async def discover_target_category_urls(
-    page: Page,
-    store_index_url: str,
-    subscribed_categories: Sequence[RackNerdCategory],
+    page: Page, store_index_url: str, subscribed_categories: Sequence[RackNerdCategory]
 ) -> list[str]:
     await page.goto(store_index_url, wait_until="domcontentloaded")
     await page.wait_for_selector(f"xpath={CATEGORY_LINK_XPATH}", state="attached")
@@ -212,9 +219,7 @@ async def discover_target_category_urls(
 
 
 async def extract_product_tasks_from_page(
-    page: Page,
-    category_name: str,
-    category_url: str,
+    page: Page, category_name: str, category_url: str
 ) -> list[ProductTask]:
     cards = page.locator(f"xpath={ANNUAL_PRODUCT_CARD_XPATH}")
     count = await cards.count()
@@ -222,9 +227,13 @@ async def extract_product_tasks_from_page(
     for index in range(count):
         card = cards.nth(index)
         title = await _locator_text(card.locator("xpath=.//header//span[1]"))
-        href = await card.locator("xpath=.//a[contains(@class,'btn-order-now')]").get_attribute("href")
+        href = await card.locator("xpath=.//a[contains(@class,'btn-order-now')]").get_attribute(
+            "href"
+        )
         footer_text = await _locator_inner_text(card.locator("xpath=.//footer"))
-        desc_text = await _locator_inner_text(card.locator("xpath=.//div[contains(@class,'product-desc')]"))
+        desc_text = await _locator_inner_text(
+            card.locator("xpath=.//div[contains(@class,'product-desc')]")
+        )
         if (
             not href
             or not footer_text
@@ -284,8 +293,7 @@ async def discover_product_task_groups(
             await page.goto(category_url, wait_until="domcontentloaded")
             await page.wait_for_selector(f"xpath={PRODUCT_CARD_XPATH}")
             category_name = (
-                await _locator_text(page.locator(f"xpath={CATEGORY_TITLE_XPATH}"))
-                or category_url
+                await _locator_text(page.locator(f"xpath={CATEGORY_TITLE_XPATH}")) or category_url
             )
             category_tasks: list[ProductTask] = []
             for task in await extract_product_tasks_from_page(page, category_name, category_url):
@@ -301,9 +309,7 @@ async def discover_product_task_groups(
 
 
 async def extract_server_info_from_page(
-    page: Page,
-    task: ProductTask,
-    updated_at: datetime,
+    page: Page, task: ProductTask, updated_at: datetime
 ) -> ServerInfo | None:
     await page.wait_for_selector(f"xpath={PRODUCT_TITLE_XPATH}", timeout=15_000)
 
@@ -318,8 +324,7 @@ async def extract_server_info_from_page(
     billing_select = page.locator(f"xpath={BILLING_SELECT_XPATH}")
     billing_options = await _extract_select_option_texts(billing_select)
     annual_price = next(
-        (parse_usd_amount(text) for text in billing_options if "Annually" in text),
-        None,
+        (parse_usd_amount(text) for text in billing_options if "Annually" in text), None
     )
     if annual_price is None:
         return None
@@ -329,9 +334,7 @@ async def extract_server_info_from_page(
         parse_location_option(text) for text in await _extract_select_option_texts(location_select)
     ]
     raw_locations = [option.raw for option in location_options]
-    normalized_locations = dedupe_preserve_order(
-        option.normalized for option in location_options
-    )
+    normalized_locations = dedupe_preserve_order(option.normalized for option in location_options)
 
     category_name = task.category_name
     if task.source == "seed":
@@ -396,12 +399,7 @@ async def collect_server_info(
     completed_by_category = {category_name: 0 for category_name, _ in category_groups}
 
     async def scrape_task(task: ProductTask) -> tuple[ProductTask, ServerInfo | None]:
-        result = await scrape_server_info(
-            browser,
-            task,
-            semaphore=semaphore,
-            updated_at=updated_at,
-        )
+        result = await scrape_server_info(browser, task, semaphore=semaphore, updated_at=updated_at)
         return task, result
 
     futures: list[asyncio.Task[tuple[ProductTask, ServerInfo | None]]] = []

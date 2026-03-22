@@ -26,7 +26,6 @@ from racknerd.scraper import (
 )
 from racknerd import save_snapshot
 
-
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
 
@@ -41,13 +40,9 @@ class ParsingTests(unittest.TestCase):
             "Los Angeles DC-03",
         )
         self.assertEqual(
-            normalize_location_name("Los Angeles DC02 (Test IP: 204.13.154.3)"),
-            "Los Angeles DC-02",
+            normalize_location_name("Los Angeles DC02 (Test IP: 204.13.154.3)"), "Los Angeles DC-02"
         )
-        self.assertEqual(
-            normalize_location_name("New York (Test IP: 192.3.81.8)"),
-            "New York",
-        )
+        self.assertEqual(normalize_location_name("New York (Test IP: 192.3.81.8)"), "New York")
 
     def test_parse_server_specs_extracts_multi_disk(self) -> None:
         specs = parse_server_specs(
@@ -117,12 +112,7 @@ class FixtureBrowserTests(unittest.IsolatedAsyncioTestCase):
         category_urls = await discover_target_category_urls(
             self.page,
             "https://my.racknerd.com/index.php?rp=/store/blackfriday2025",
-            [
-                "KVM VPS",
-                "AMD Ryzen Linux KVM VPS",
-                "New Year Specials",
-                "Black Friday 2025",
-            ],
+            ["KVM VPS", "AMD Ryzen Linux KVM VPS", "New Year Specials", "Black Friday 2025"],
         )
 
         self.assertEqual(
@@ -153,8 +143,7 @@ class FixtureBrowserTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(server.billing_cycle_annually_usd, 32.55)
         self.assertEqual(server.model, "AMD Ryzen Linux KVM VPS - 1GB Ryzen VPS")
         self.assertEqual(
-            server.normalized_locations,
-            ["Los Angeles DC-02", "Los Angeles DC-03", "New York"],
+            server.normalized_locations, ["Los Angeles DC-02", "Los Angeles DC-03", "New York"]
         )
         self.assertEqual(server.specs.memory, "1 GB DDR4 RAM")
         self.assertEqual(server.specs.public_network_port, "1Gbps Public Network Port")
@@ -191,17 +180,14 @@ class StorageTests(unittest.TestCase):
 
 
 @unittest.skipUnless(
-    os.getenv("RUN_LIVE_RACKNERD_TESTS") == "1",
-    "Live RackNerd smoke test disabled",
+    os.getenv("RUN_LIVE_RACKNERD_TESTS") == "1", "Live RackNerd smoke test disabled"
 )
 class LiveSmokeTests(unittest.IsolatedAsyncioTestCase):
     async def test_run_snapshot_with_black_friday_category(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             snapshot = await run_snapshot(
                 ScraperConfig(
-                    category_urls=[
-                        "https://my.racknerd.com/index.php?rp=/store/blackfriday2025"
-                    ],
+                    category_urls=["https://my.racknerd.com/index.php?rp=/store/blackfriday2025"],
                     max_concurrency=1,
                     output_dir=Path(tmp_dir),
                 )

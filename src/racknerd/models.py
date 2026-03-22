@@ -6,7 +6,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from racknerd.catalog import RackNerdCategory, SubscribedRackNerdCategory
+from catalog import RackNerdCategory, SubscribedRackNerdCategory
 from settings import settings
 
 
@@ -103,7 +103,4 @@ class ScraperConfig(BaseModel):
     scheduler_coalesce: bool = settings.scheduler_coalesce
 
     def scheduler_job_defaults(self) -> dict[str, bool | int]:
-        return {
-            "max_instances": self.scheduler_max_instances,
-            "coalesce": self.scheduler_coalesce,
-        }
+        return {"max_instances": self.scheduler_max_instances, "coalesce": self.scheduler_coalesce}

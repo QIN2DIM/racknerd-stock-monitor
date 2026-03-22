@@ -26,8 +26,7 @@ def start_scheduler(
 ) -> None:
     scraper_config = config or ScraperConfig()
     scheduler = AsyncIOScheduler(
-        timezone=scraper_config.timezone,
-        job_defaults=scraper_config.scheduler_job_defaults(),
+        timezone=scraper_config.timezone, job_defaults=scraper_config.scheduler_job_defaults()
     )
     scheduler.add_job(
         _snapshot_job,
