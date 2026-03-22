@@ -6,12 +6,16 @@ on:
       - main
     paths:
       - 'web/**'
+      - 'src/**'
       - 'data/latest.json'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
+  schedule:
+    # Run once a day at 00:00 UTC
+    - cron: '0 0 * * *'
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -26,6 +30,34 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # --- Setup Python & Scrape Data ---
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: ".python-version"
+
+      - name: Install dependencies (Python)
+        run: uv sync
+
+      - name: Install Playwright browsers
+        run: uv run playwright install --with-deps chromium
+
+      - name: Scrape latest data
+        run: uv run vsm snapshot
+
+      - name: Commit scraped data
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update stock data [skip ci]"
+          file_pattern: "data/*.json data/**/*.json"
+
+      # --- Setup Node.js & Build Web ---
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -41,7 +73,7 @@ jobs:
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Install dependencies
+      - name: Install dependencies (Node.js)
         working-directory: web
         run: pnpm install --frozen-lockfile
 
