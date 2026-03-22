@@ -6,6 +6,7 @@ import {
   type ServerRow,
   type SnapshotView,
 } from './data';
+import { AFF_ID } from './constants';
 
 const DATA_URL = './data/latest.json';
 
@@ -259,11 +260,16 @@ function renderTable(rows: ServerRow[]): void {
 function buildRow(row: ServerRow): HTMLTableRowElement {
   const tr = document.createElement('tr');
 
+  const buyUrl =
+    (row.pid ?? 0) > 0
+      ? `https://my.racknerd.com/aff.php?aff=${AFF_ID}&a=add&pid=${row.pid}`
+      : `${row.confproduct_url}&aff=${AFF_ID}`;
+
   // 1. Model (with hyperlink + category)
   const tdModel = td();
   const link = document.createElement('a');
   link.className = 'model-link';
-  link.href = row.product_url;
+  link.href = buyUrl;
   link.target = '_blank';
   link.rel = 'noreferrer';
   link.innerHTML =
@@ -299,12 +305,6 @@ function buildRow(row: ServerRow): HTMLTableRowElement {
 
   // 6. Actions
   const tdActions = td();
-  const affId = '18909';
-  const buyUrl =
-    (row.pid ?? 0) > 0
-      ? `https://my.racknerd.com/aff.php?aff=${affId}&a=add&pid=${row.pid}`
-      : `${row.confproduct_url}&aff=${affId}`;
-
   tdActions.innerHTML =
     `<a class="action-link primary" href="${esc(buyUrl)}" target="_blank" rel="noreferrer">下单</a>`;
   tr.appendChild(tdActions);
