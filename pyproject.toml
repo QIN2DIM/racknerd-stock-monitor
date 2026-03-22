@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=80", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "racknerd-stock-monitor"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "apscheduler>=3.11.2",
+    "httpx>=0.28.1",
+    "pydantic>=2.11.3",
+    "playwright>=1.58.0",
+    "pydantic-settings>=2.13.1",
+    "typer>=0.16.0",
+    "loguru>=0.7.3",
+]
+
+[project.scripts]
+vsm = "racknerd.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[dependency-groups]
+dev = [
+    "black>=26.3.1",
+]
