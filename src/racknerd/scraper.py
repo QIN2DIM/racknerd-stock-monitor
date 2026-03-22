@@ -150,7 +150,6 @@ def parse_server_specs(description_text: str | None) -> ServerSpecs:
             continue
         if (
             monthly_transfer is None
-            and "monthly" in lower
             and ("bandwidth" in lower or "transfer" in lower)
         ):
             monthly_transfer = line
@@ -227,9 +226,23 @@ async def extract_product_tasks_from_page(
     for index in range(count):
         card = cards.nth(index)
         title = await _locator_text(card.locator("xpath=.//header//span[1]"))
-        href = await card.locator("xpath=.//a[contains(@class,'btn-order-now')]").get_attribute(
-            "href"
-        )
+        order_button = card.locator("xpath=.//a[contains(@class,'btn-order-now')]")
+        href = await order_button.get_attribute("href")
+        button_id = await order_button.get_attribute("id")
+        
+        pid = None
+        if button_id:
+            # product20-order-button -> 20
+            match = re.search(r"product(\d+)", button_id)
+            if match:
+                pid = int(match.group(1))
+        
+        if pid is None and href:
+            # cart.php?a=add&pid=20 -> 20
+            match = re.search(r"pid=(\d+)", href)
+            if match:
+                pid = int(match.group(1))
+
         footer_text = await _locator_inner_text(card.locator("xpath=.//footer"))
         desc_text = await _locator_inner_text(
             card.locator("xpath=.//div[contains(@class,'product-desc')]")
@@ -239,6 +252,7 @@ async def extract_product_tasks_from_page(
             or not footer_text
             or "Annually" not in footer_text
             or not is_server_like_card(desc_text)
+            or pid is None
         ):
             continue
         tasks.append(
@@ -246,6 +260,7 @@ async def extract_product_tasks_from_page(
                 category_name=category_name,
                 category_url=category_url,
                 product_url=urljoin(category_url, href),
+                pid=pid,
                 store_title=title,
                 store_price_cycle="Annually",
                 store_card_text=desc_text,
@@ -348,6 +363,7 @@ async def extract_server_info_from_page(
         model=build_model_name(category_name, confproduct_title),
         product_url=task.product_url,
         confproduct_url=confproduct_url,
+        pid=task.pid or 0,  # Fallback to 0 if unknown for seed tasks
         store_price_cycle=task.store_price_cycle,
         billing_cycle_annually_usd=annual_price,
         raw_locations=raw_locations,

@@ -16,6 +16,7 @@ class ProductTask(BaseModel):
     category_name: SubscribedRackNerdCategory
     category_url: str
     product_url: str
+    pid: int | None = None
     store_title: str | None = None
     store_price_cycle: str | None = None
     store_card_text: str | None = None
@@ -58,6 +59,7 @@ class ServerInfo(BaseModel):
     model: str
     product_url: str
     confproduct_url: str
+    pid: int
     store_price_cycle: str | None = None
     billing_cycle_annually_usd: float
     raw_locations: list[str] = Field(default_factory=list)

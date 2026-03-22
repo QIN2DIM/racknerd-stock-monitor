@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="RackNerd 库存静态看板，支持 latest.json 渲染、排序、筛选和 DC02/DC03 标注。"
+    />
+    <title>RackNerd Stock Monitor</title>
+  </head>
+  <body>
+    <div id="app" class="page-shell">
+      <header class="topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">RackNerd <span class="accent">Stock</span></h1>
+          <span id="data-status" class="status-pill">准备加载</span>
+        </div>
+        <div class="topbar-right">
+          <span id="stat-updated" class="meta-text">--</span>
+          <button id="theme-toggle" class="icon-button" type="button" title="切换主题">
+            <svg class="icon-sun" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="8" cy="8" r="3"/>
+              <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/>
+            </svg>
+            <svg class="icon-moon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 8.5A6 6 0 0 1 7.5 2 6 6 0 1 0 14 8.5z"/>
+            </svg>
+          </button>
+          <a class="icon-button" href="./data/latest.json" target="_blank" rel="noreferrer" title="查看原始 JSON">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5.5 2C4 2 3 3.5 3 5s1.5 2 1.5 3S3 11 3 11c0 1.5 1 3 2.5 3"/>
+              <path d="M10.5 2C12 2 13 3.5 13 5s-1.5 2-1.5 3 1.5 3 1.5 3c0 1.5-1 3-2.5 3"/>
+            </svg>
+          </a>
+        </div>
+      </header>
+
+      <section class="toolbar" aria-label="Filters">
+        <div class="toolbar-filters">
+          <input
+            id="search-input"
+            type="search"
+            placeholder="搜索型号、分类、机房、规格…"
+            autocomplete="off"
+            class="filter-input"
+          />
+          <select id="category-filter" class="filter-select">
+            <option value="">全部分类</option>
+          </select>
+          <select id="location-filter" class="filter-select">
+            <option value="">全部机房</option>
+          </select>
+          <label class="toggle-chip">
+            <input id="dc02-filter" type="checkbox" />
+            <span>DC-02</span>
+          </label>
+          <label class="toggle-chip">
+            <input id="dc03-filter" type="checkbox" />
+            <span>DC-03</span>
+          </label>
+        </div>
+        <div class="toolbar-meta">
+          <p id="result-summary" class="result-summary">等待数据加载</p>
+          <button id="reset-button" class="text-button" type="button">重置</button>
+        </div>
+      </section>
+
+      <section class="table-panel" aria-label="Inventory table">
+        <div id="table-state" class="table-state" role="status" aria-live="polite">
+          <strong id="table-state-title">正在加载数据</strong>
+          <p id="table-state-description">准备读取 <code>data/latest.json</code>。</p>
+        </div>
+
+        <div id="table-host" class="table-host" hidden></div>
+      </section>
+
+      <footer class="page-footer">
+        <span>Data sourced from <a href="https://www.racknerd.com/" target="_blank" rel="noreferrer">RackNerd</a></span>
+        <span class="footer-sep">·</span>
+        <a href="https://github.com/QIN2DIM/racknerd-stock-monitor" target="_blank" rel="noreferrer">GitHub</a>
+      </footer>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
