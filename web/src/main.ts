@@ -54,7 +54,7 @@ function applyTheme(theme: Theme): void {
   localStorage.setItem('theme', theme);
 }
 
-applyTheme(getStoredTheme() ?? detectSystemTheme());
+applyTheme(getStoredTheme() ?? 'light');
 
 // ── Bootstrap ───────────────────────────────────────────────────────
 bindEvents();
