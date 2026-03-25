@@ -36,14 +36,6 @@ let sortDirection: 'asc' | 'desc' = 'asc';
 // ── Theme ───────────────────────────────────────────────────────────
 type Theme = 'light' | 'dark';
 
-function detectSystemTheme(): Theme {
-  try {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  } catch {
-    return 'light';
-  }
-}
-
 function getStoredTheme(): Theme | null {
   const stored = localStorage.getItem('theme');
   return stored === 'light' || stored === 'dark' ? stored : null;
